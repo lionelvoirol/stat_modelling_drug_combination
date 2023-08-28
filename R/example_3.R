@@ -7,7 +7,7 @@ library(dplyr)
 library(progress)
 
 # define drugs
-nbr_drugs = 10
+nbr_drugs = 11
 drugs = LETTERS[1:nbr_drugs]
 dosages = c(1,2)
 nbr_dosages = length(dosages)
@@ -37,15 +37,19 @@ dim(combn(length(drugs), nbr_of_drug_per_treatment))[2] * length(dosages)^nbr_of
 # create all interactions from example
 vec_interactions = c()
 for(i in 2:nbr_of_drug_per_treatment){
-
   all_comb_i = combn(all_drugs_and_dosages, m = i)
   # remove treatment where the same drug is at the same dosage
   id_treatment_same_drug_diff_dosage = which(apply(all_comb_i, MARGIN = 2, FUN = identify_same_drug))
   all_comb_i_no_duplicate = all_comb_i[, -id_treatment_same_drug_diff_dosage]
-  vec_all_comb_i_no_duplicate = apply(all_comb_i_no_duplicate, MARGIN = 2, FUN = function(x){paste(x, collapse ="-")})
+  vec_to_add= apply(all_comb_i_no_duplicate, MARGIN = 2, FUN = function(x){paste(x, collapse ="-")})
+  # print(length(vec_to_add))
+  # print(tail(vec_to_add))
+  vec_all_comb_i_no_duplicate = vec_to_add
   # append
   vec_interactions = c(vec_interactions, vec_all_comb_i_no_duplicate)
 }
+
+
 length(vec_interactions)
 head(vec_interactions)
 tail(vec_interactions)
@@ -56,7 +60,7 @@ for(i in 2:nbr_of_drug_per_treatment){
   nbr_int_i = dim(combn(1:(nbr_drugs), i))[2] * nbr_dosages^i
   total_int = total_int + nbr_int_i
 }
-
+total_int
 # check if equal
 total_int == length(vec_interactions)
 
