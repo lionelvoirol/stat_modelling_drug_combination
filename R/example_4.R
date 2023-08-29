@@ -93,7 +93,7 @@ plot(NA,
 grid(col="grey80", lty=1)
 
 # contour
-contour(x1, x2, Z_mat,  levels = c(seq(1000, 5000, by = 450)),
+contour(x1, x2, Z_mat,  levels = c(seq(800, 5000, by = 450)),
         drawlabels = F, las = 1, add = T)
 
 
@@ -130,7 +130,7 @@ points(x=0, y = 6.1, col="#a1567c", pch=16, cex=.8)
 cex_lambda = .9
 text(x = 2.5, y = 2, "$\\lambda_1$" , col= "#a1567c",cex=cex_lambda)
 text(x = 5.15, y = 2, "$\\lambda_2$" , col= "#c6b975",cex=cex_lambda)
-text(x = 6.9, y = 2, "$\\lambda_3$" , col= "#a7d5ee",cex=cex_lambda)
+text(x = 7.1, y = 2, "$\\lambda_3$" , col= "#a7d5ee",cex=cex_lambda)
 text(x = 12, y = 2, "$\\lambda=0$" , col= "#4f9867",cex=cex_lambda)
 
 
@@ -163,22 +163,27 @@ col_vec = c("black", "black")
 grid(col = "grey80", lty=1)
 
 
-delta = .15
+delta = .2
 val_1 = -delta/2
 rect(xleft = val_1,xright = val_1+delta, ybottom = -1, ytop = 50,
      col = t_col("#4f9867", percent = 80), border = NA)
+abline(v=0, col="grey20", lty=2)
 val_2 = .7
 rect(xleft = val_2,xright = val_2+delta, ybottom = -1, ytop = 50, 
      col = t_col("#a7d5ee", percent = 80),
        # t_col("#decf83", percent = 80), 
      border = NA)
-val_3 = 1.67
+
+abline(v=val_2+delta/2, col="grey20", lty=2)
+val_3 = 1.5
 rect(xleft = val_3,xright = val_3+delta, ybottom = -1, ytop = 50, 
      col = t_col("#decf83", percent = 80), border = NA)
-val_4 = 4
+abline(v=val_3+delta/2, col="grey20", lty=2)
+val_4 = 3.9
 rect(xleft = val_4,xright = val_4+delta, ybottom = -1, ytop = 50, 
      col = t_col("#a1567c", percent = 80), border = NA)
 
+abline(v=val_4+delta/2, col="grey20", lty=2)
 
 for (i in 2:3) {
   
@@ -190,7 +195,7 @@ points(x=0,y=beta_hat[2],  col="#4f9867", pch=16, cex=.8)
 points(x = val_2+delta/2, y=9.1, col="#a7d5ee", pch=16, cex=.8)
 points(x = val_2+delta/2, y=1.1, col="#a7d5ee", pch=16, cex=.8)
 
-points(x=val_3+delta/2, y = 8, col="#decf83", pch=16, cex=.8)
+points(x=val_3+delta/2, y = 8.2, col="#decf83", pch=16, cex=.8)
 points(x = val_3+delta/2, y=0.1, col="#decf83", pch=16, cex=.8)
 
 points(x=val_4+delta/2, y = 0, col="#a1567c", pch=16, cex=.8)
@@ -209,6 +214,6 @@ points(x=val_4+delta/2, y = 5.99, col="#a1567c", pch=16, cex=.8)
 
 mtext(side = 2, text = "$\\hat{\\beta}$", line = 1.8)
 mtext(side = 1, text = "$\\lambda$", line = 2.2)
-
+box()
 dev.off()
 system("pdflatex -output-directory=img img/plot_1.tex")
