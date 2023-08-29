@@ -145,9 +145,84 @@ eps=rnorm(n = dim(X_mat)[1], mean = 0, sd = sqrt(sigma2))
 y = X_mat%*% beta + eps
 
 # compute true best drugs
-df_all_treatments = data.frame(X_mat_all_treatments)
+true_treatment_effect_all_treatment = X_mat_all_treatments %*% beta
+df_all_treatments_true_effect = data.frame("treatment" = vec_all_treatments_no_duplicate,
+                                           "treatment_effect" = true_treatment_effect_all_treatment)
+df_all_treatments_true_effect = df_all_treatments_true_effect %>% arrange(true_treatment_effect_all_treatment)
+head(df_all_treatments_true_effect)
 
-rownames(df_all_treatments) = 
 # perform lasso as initial estimator
+fit_lasso_init = glmnet::glmnet(x = X_mat, y = y, intercept = F, family ="gaussian")
+
+# define fct for AIC
+aic_lasso <- function(lasso_fit, Xi, y, k = 2, intercept=F) {
+  
+  # AIC based on RSS
+  n = nrow(Xi)
+  if(intercept){
+    pred <- Xi %*% coef(lasso_fit)
+  }else{
+    pred <- Xi %*% coef(lasso_fit)[-1,]
+  }
+  rss <- apply((y - pred)^2, 2, sum) 
+  non_zero_coef = apply(coef(lasso_fit), MARGIN = 2, FUN = function(x){sum(x!=0)})
+  aic = k * non_zero_coef + n*log(rss) 
+  sel = which.min(aic)
+  return(sel)
+}
 
 
+# select by AIC
+select_lambda <- aic_lasso(fit_lasso_init, as.matrix(X_mat), as.vector(y), k = 2, intercept = F)
+
+# extract vector of estimated beta from the initial lasso
+beta_lasso_aic <- coef(fit_lasso_init)[, select_lambda]
+
+# get beta
+beta_marginal = beta_lasso_aic[2:(nbr_marginal+1)]
+beta_marginal
+beta_1st_interaction =  beta_lasso_aic[(nbr_marginal+1+1):(nbr_marginal + nbr_1st_order_int+1)]
+head(beta_1st_interaction)
+tail(beta_1st_interaction)
+beta_2nd_interaction =  beta_lasso_aic[(nbr_marginal+nbr_1st_order_int+1+1):(nbr_marginal + nbr_1st_order_int+nbr_2nd_order_int+1)]
+head(beta_2nd_interaction)
+tail(beta_2nd_interaction)
+beta_3rd_interaction =  beta_lasso_aic[(nbr_marginal+nbr_1st_order_int+nbr_2nd_order_int+1+1):(nbr_marginal + nbr_1st_order_int+nbr_2nd_order_int+nbr_3rd_order_int+1)]
+head(beta_3rd_interaction)
+tail(beta_3rd_interaction)
+
+
+# create vector of weights
+c1 = mean(beta_marginal != 0 ) * mean(abs(beta_marginal[which(beta_marginal != 0)]))
+c1
+c2 = mean(beta_1st_interaction != 0 ) * mean(abs(beta_1st_interaction[which(beta_1st_interaction != 0)]))
+c2
+c3 = mean(beta_2nd_interaction != 0 ) * mean(abs(beta_2nd_interaction[which(beta_2nd_interaction != 0)]))
+c3
+c4 = mean(beta_3rd_interaction != 0 ) * mean(abs(beta_3rd_interaction[which(beta_3rd_interaction != 0)]))
+c4
+
+# create vector of weight
+pf_adaptive_lasso = c(rep(1/c1, length(beta_marginal)),
+                      rep(1/c2, length(beta_1st_interaction)),
+                      rep(1/c3, length(beta_2nd_interaction)),
+                      rep(1/c4, length(beta_3rd_interaction)))
+
+# perform adaptive lasso
+fit_adalasso= glmnet::glmnet(x = X_mat, y = y, 
+                             intercept = F, family ="gaussian",
+                             penalty.factor = pf_adaptive_lasso
+                             )
+
+
+# select by AIC
+select_lambda_adalasso <- aic_lasso(fit_adalasso, as.matrix(X_mat), as.vector(y), k = 2, intercept = F)
+
+# extract vector of estimated beta from the initial lasso
+beta_adalasso_aic <- coef(fit_adalasso)[, select_lambda_adalasso]
+
+# predict expected treatment effect for all treatments
+predicted_treatment_effect_all_treatments = X_mat_all_treatments %*% coef(fit_adalasso)[, select_lambda_adalasso][-1]
+
+# add to treatment df
+df_all_treatments_true_effect$predicted_treatment_effect = predicted_treatment_effect_all_treatments
