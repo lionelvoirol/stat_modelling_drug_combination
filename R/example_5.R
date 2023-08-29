@@ -226,3 +226,5 @@ predicted_treatment_effect_all_treatments = X_mat_all_treatments %*% coef(fit_ad
 
 # add to treatment df
 df_all_treatments_true_effect$predicted_treatment_effect = predicted_treatment_effect_all_treatments
+
+
