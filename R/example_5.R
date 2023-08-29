@@ -30,6 +30,10 @@ id_treatment_same_drug_diff_dosage = which(apply(all_treatments, MARGIN = 2, FUN
 id_treatment_same_drug_diff_dosage
 all_treatments_no_duplicate = all_treatments[, -id_treatment_same_drug_diff_dosage]
 dim(all_treatments_no_duplicate)
+vec_all_treatments_no_duplicate = apply(all_treatments_no_duplicate, 
+                                        MARGIN = 2,
+                                        FUN = function(x){paste(x, collapse="")})
+length(vec_all_treatments_no_duplicate)
 
 # create all interactions from example
 lst_interactions = list()
@@ -125,4 +129,25 @@ beta[id_signif_1st_int] = rnorm(mean = 15, sd = 5, n = round(prop_signif_1st_ord
 id_signif_2nd_int = sample((nbr_marginal+nbr_1st_order_int+1):(nbr_marginal +nbr_1st_order_int+nbr_2nd_order_int ),
                            size = round(prop_signif_2nd_order_int * nbr_2nd_order_int) )
 beta[id_signif_2nd_int] = rnorm(mean = 15, sd = 5, n = round(prop_signif_2nd_order_int * nbr_2nd_order_int)  )
+
+# assign third order interaction effects
+id_signif_3rd_int = sample((nbr_marginal+nbr_1st_order_int+nbr_2nd_order_int+1):(nbr_marginal +nbr_1st_order_int+nbr_2nd_order_int+nbr_3rd_order_int ),
+                           size = round(prop_signif_3rd_order_int * nbr_3rd_order_int) )
+beta[id_signif_3rd_int] = rnorm(mean = 15, sd = 5, n = round(prop_signif_3rd_order_int * nbr_3rd_order_int)  )
+
+
+# identify non zero beta
+which(beta!=0)
+
+# generate data
+sigma2 = 10
+eps=rnorm(n = dim(X_mat)[1], mean = 0, sd = sqrt(sigma2))
+y = X_mat%*% beta + eps
+
+# compute true best drugs
+df_all_treatments = data.frame(X_mat_all_treatments)
+
+rownames(df_all_treatments) = 
+# perform lasso as initial estimator
+
 
